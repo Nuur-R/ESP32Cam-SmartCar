@@ -1,10 +1,4 @@
-/*********
-  Rui Santos
-  Complete instructions at https://RandomNerdTutorials.com/esp32-cam-projects-ebook/
-  
-  Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files.
-  The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
-*********/
+#include <Arduino.h>
 
 #include "esp_camera.h"
 #include <WiFi.h>
@@ -15,11 +9,10 @@
 #include "soc/soc.h"             // disable brownout problems
 #include "soc/rtc_cntl_reg.h"    // disable brownout problems
 #include "esp_http_server.h"
-#include <ESP32Servo.h>
 
 // Replace with your network credentials
-const char* ssid = "Al-Mubarokah";
-const char* password = "12345678";
+const char* ssid = "Rania 2";
+const char* password = "REPLACE_WITH_YOUR_PASSWORD";
 
 #define PART_BOUNDARY "123456789000000000000987654321"
 
@@ -128,18 +121,10 @@ const char* password = "12345678";
   #error "Camera model not selected"
 #endif
 
-#define SERVO_1      14
-#define SERVO_2      15
-
-#define SERVO_STEP   5
-
-Servo servoN1;
-Servo servoN2;
-Servo servo1;
-Servo servo2;
-
-int servo1Pos = 0;
-int servo2Pos = 0;
+#define MOTOR_1_PIN_1    14
+#define MOTOR_1_PIN_2    15
+#define MOTOR_2_PIN_1    13
+#define MOTOR_2_PIN_2    12
 
 static const char* _STREAM_CONTENT_TYPE = "multipart/x-mixed-replace;boundary=" PART_BOUNDARY;
 static const char* _STREAM_BOUNDARY = "\r\n--" PART_BOUNDARY "\r\n";
@@ -183,12 +168,12 @@ static const char PROGMEM INDEX_HTML[] = R"rawliteral(
     </style>
   </head>
   <body>
-    <h1>ESP32-CAM Pan and Tilt</h1>
+    <h1>ESP32-CAM Robot</h1>
     <img src="" id="photo" >
     <table>
-      <tr><td colspan="3" align="center"><button class="button" onmousedown="toggleCheckbox('up');" ontouchstart="toggleCheckbox('up');">Up</button></td></tr>
-      <tr><td align="center"><button class="button" onmousedown="toggleCheckbox('left');" ontouchstart="toggleCheckbox('left');">Left</button></td><td align="center"></td><td align="center"><button class="button" onmousedown="toggleCheckbox('right');" ontouchstart="toggleCheckbox('right');">Right</button></td></tr>
-      <tr><td colspan="3" align="center"><button class="button" onmousedown="toggleCheckbox('down');" ontouchstart="toggleCheckbox('down');">Down</button></td></tr>                   
+      <tr><td colspan="3" align="center"><button class="button" onmousedown="toggleCheckbox('forward');" ontouchstart="toggleCheckbox('forward');" onmouseup="toggleCheckbox('stop');" ontouchend="toggleCheckbox('stop');">Forward</button></td></tr>
+      <tr><td align="center"><button class="button" onmousedown="toggleCheckbox('left');" ontouchstart="toggleCheckbox('left');" onmouseup="toggleCheckbox('stop');" ontouchend="toggleCheckbox('stop');">Left</button></td><td align="center"><button class="button" onmousedown="toggleCheckbox('stop');" ontouchstart="toggleCheckbox('stop');">Stop</button></td><td align="center"><button class="button" onmousedown="toggleCheckbox('right');" ontouchstart="toggleCheckbox('right');" onmouseup="toggleCheckbox('stop');" ontouchend="toggleCheckbox('stop');">Right</button></td></tr>
+      <tr><td colspan="3" align="center"><button class="button" onmousedown="toggleCheckbox('backward');" ontouchstart="toggleCheckbox('backward');" onmouseup="toggleCheckbox('stop');" ontouchend="toggleCheckbox('stop');">Backward</button></td></tr>                   
     </table>
    <script>
    function toggleCheckbox(x) {
@@ -297,44 +282,42 @@ static esp_err_t cmd_handler(httpd_req_t *req){
   }
 
   sensor_t * s = esp_camera_sensor_get();
-  //flip the camera vertically
-  //s->set_vflip(s, 1);          // 0 = disable , 1 = enable
-  // mirror effect
-  //s->set_hmirror(s, 1);          // 0 = disable , 1 = enable
-
   int res = 0;
   
-  if(!strcmp(variable, "up")) {
-    if(servo1Pos <= 170) {
-      servo1Pos += 10;
-      servo1.write(servo1Pos);
-    }
-    Serial.println(servo1Pos);
-    Serial.println("Up");
+  if(!strcmp(variable, "forward")) {
+    Serial.println("Forward");
+    digitalWrite(MOTOR_1_PIN_1, 1);
+    digitalWrite(MOTOR_1_PIN_2, 0);
+    digitalWrite(MOTOR_2_PIN_1, 1);
+    digitalWrite(MOTOR_2_PIN_2, 0);
   }
   else if(!strcmp(variable, "left")) {
-    if(servo2Pos <= 170) {
-      servo2Pos += 10;
-      servo2.write(servo2Pos);
-    }
-    Serial.println(servo2Pos);
     Serial.println("Left");
+    digitalWrite(MOTOR_1_PIN_1, 0);
+    digitalWrite(MOTOR_1_PIN_2, 1);
+    digitalWrite(MOTOR_2_PIN_1, 1);
+    digitalWrite(MOTOR_2_PIN_2, 0);
   }
   else if(!strcmp(variable, "right")) {
-    if(servo2Pos >= 10) {
-      servo2Pos -= 10;
-      servo2.write(servo2Pos);
-    }
-    Serial.println(servo2Pos);
     Serial.println("Right");
+    digitalWrite(MOTOR_1_PIN_1, 1);
+    digitalWrite(MOTOR_1_PIN_2, 0);
+    digitalWrite(MOTOR_2_PIN_1, 0);
+    digitalWrite(MOTOR_2_PIN_2, 1);
   }
-  else if(!strcmp(variable, "down")) {
-    if(servo1Pos >= 10) {
-      servo1Pos -= 10;
-      servo1.write(servo1Pos);
-    }
-    Serial.println(servo1Pos);
-    Serial.println("Down");
+  else if(!strcmp(variable, "backward")) {
+    Serial.println("Backward");
+    digitalWrite(MOTOR_1_PIN_1, 0);
+    digitalWrite(MOTOR_1_PIN_2, 1);
+    digitalWrite(MOTOR_2_PIN_1, 0);
+    digitalWrite(MOTOR_2_PIN_2, 1);
+  }
+  else if(!strcmp(variable, "stop")) {
+    Serial.println("Stop");
+    digitalWrite(MOTOR_1_PIN_1, 0);
+    digitalWrite(MOTOR_1_PIN_2, 0);
+    digitalWrite(MOTOR_2_PIN_1, 0);
+    digitalWrite(MOTOR_2_PIN_2, 0);
   }
   else {
     res = -1;
@@ -383,18 +366,13 @@ void startCameraServer(){
 
 void setup() {
   WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, 0); //disable brownout detector
-  servo1.setPeriodHertz(50);    // standard 50 hz servo
-  servo2.setPeriodHertz(50);    // standard 50 hz servo
-  servoN1.attach(2, 1000, 2000);
-  servoN2.attach(13, 1000, 2000);
   
-  servo1.attach(SERVO_1, 1000, 2000);
-  servo2.attach(SERVO_2, 1000, 2000);
+  pinMode(MOTOR_1_PIN_1, OUTPUT);
+  pinMode(MOTOR_1_PIN_2, OUTPUT);
+  pinMode(MOTOR_2_PIN_1, OUTPUT);
+  pinMode(MOTOR_2_PIN_2, OUTPUT);
   
-  servo1.write(servo1Pos);
-  servo2.write(servo2Pos);
-  
-  Serial.begin(9600);
+  Serial.begin(115200);
   Serial.setDebugOutput(false);
   
   camera_config_t config;
