@@ -11,8 +11,8 @@
 #include "esp_http_server.h"
 
 // Replace with your network credentials
-const char* ssid = "Rania 2";
-const char* password = "REPLACE_WITH_YOUR_PASSWORD";
+const char* ssid = "SurveyCar";
+const char* password = "1234567890";
 
 #define PART_BOUNDARY "123456789000000000000987654321"
 
@@ -372,7 +372,7 @@ void setup() {
   pinMode(MOTOR_2_PIN_1, OUTPUT);
   pinMode(MOTOR_2_PIN_2, OUTPUT);
   
-  Serial.begin(115200);
+  Serial.begin(9600);
   Serial.setDebugOutput(false);
   
   camera_config_t config;
@@ -414,16 +414,11 @@ void setup() {
     return;
   }
   // Wi-Fi connection
-  WiFi.begin(ssid, password);
-  while (WiFi.status() != WL_CONNECTED) {
-    delay(500);
-    Serial.print(".");
-  }
+  WiFi.softAP(ssid, password); // Initeh asalnya WiFi.begin kalau mau bikin espnya jadi AP ganti jadi WiFi.softAP(ssid, password);
   Serial.println("");
   Serial.println("WiFi connected");
   
-  Serial.print("Camera Stream Ready! Go to: http://");
-  Serial.println(WiFi.localIP());
+  Serial.print("Camera Stream Ready! Go to: http://192.168.4.1");
   
   // Start streaming web server
   startCameraServer();
