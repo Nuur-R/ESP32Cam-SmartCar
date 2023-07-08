@@ -11,16 +11,12 @@
 #include "esp_http_server.h"
 
 // Replace with your network credentials
-const char* ssid = "SurveyCar";
+const char* ssid = "SurveyCar - Adrian";
 const char* password = "1234567890";
 
 #define PART_BOUNDARY "123456789000000000000987654321"
 
 #define CAMERA_MODEL_AI_THINKER
-//#define CAMERA_MODEL_M5STACK_PSRAM
-//#define CAMERA_MODEL_M5STACK_WITHOUT_PSRAM
-//#define CAMERA_MODEL_M5STACK_PSRAM_B
-//#define CAMERA_MODEL_WROVER_KIT
 
 #if defined(CAMERA_MODEL_WROVER_KIT)
   #define PWDN_GPIO_NUM    -1
